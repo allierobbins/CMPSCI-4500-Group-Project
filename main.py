@@ -33,7 +33,7 @@ def cozmo_program(robot=None):
     else:
         robot = CozmoRobot(robot)
 
-    foods = ['milk', 'strawberry', 'blueberries', 'apple', 'egg', 'cheese', 'pepper', 'flour', 'crust', 'cheese', 'tomato', 'chocolate']
+    foods = ['hotdog', 'milk', 'blueberry', 'broccoli', 'cupcake', 'carrot']
 
     smoothie = ['blueberries', 'strawberry', 'milk']
     fruitSalad = ['apple', 'strawberry', 'blueberries']
@@ -47,7 +47,7 @@ def cozmo_program(robot=None):
     create_photo_directory()
     plate = ColorfulPlate()
     robot.add_event_handler(on_new_camera_image)
-    robot.speak('I''m hungry')
+    robot.speak('Hi, I am chef cozmo! Are you hungry? Lets make some foods to satisfy our taste buds')
     robot.set_start_position()
 
     counter = -1
@@ -56,8 +56,22 @@ def cozmo_program(robot=None):
 
         counter += 1
         allFoodsFound = False
+        taste = ""
+        if(recipeString[counter]=="smoothie"):
+            taste = " sweet and creamy"
+        elif(recipeString[counter]=="fruitSalad"):
+            taste = " sweet and tart"
+        elif(recipeString[counter]=="omelete"):
+            taste = " spicy and savory"
+        elif(recipeString[counter]=="pie"):
+            taste = " sweet and crusty"
+        elif(recipeString[counter]=="pizza"):
+            taste = " salty"
+        else:
+            taste = " soft and rich"
 
-        robot.speak("Lets make a " + recipeString[counter])
+        robot.speak("Something " + taste + " sounds good")
+        robot.speak("Hmm... how about a " + recipeString[counter])
         robot.speak("We will need " + recipe[0] +  ", " + recipe[1] + ", and " + recipe[2]) 
         sleep(2)
         while not allFoodsFound: 
@@ -109,6 +123,11 @@ def cozmo_program(robot=None):
                         robot.speak("We still need " + recipe[0] + " and " + recipe[1])
                     elif(len(recipe)==1):
                         robot.speak("We still need " + recipe[0])
+                    else:
+                        robot.speak("Yummy in my tummy! That was definitely " + taste)
+
+                    if(recipeString[counter] != 'chocolateCake' and len(recipe)==0):
+                        robot.speak("That was good, but now lets make something else")
 
                 else:
                     pass
