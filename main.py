@@ -33,7 +33,7 @@ def cozmo_program(robot=None):
     else:
         robot = CozmoRobot(robot)
 
-    foods = ['hotdog', 'milk', 'blueberry', 'broccoli', 'cupcake', 'carrot']
+    foods = ['strawberry', 'milk', 'blueberries', 'apple', 'strawberry', 'egg', 'cheese', 'pepper', 'flour', 'crust', 'tomato', 'chocolate']
 
     smoothie = ['blueberries', 'strawberry', 'milk']
     fruitSalad = ['apple', 'strawberry', 'blueberries']
