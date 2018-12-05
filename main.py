@@ -33,57 +33,110 @@ def cozmo_program(robot=None):
     else:
         robot = CozmoRobot(robot)
 
-    foods = ['hotdog', 'milk', 'blueberry', 'broccoli', 'cupcake', 'carrot']
+    foods = ['strawberry', 'milk', 'blueberries', 'apple', 'strawberry', 'egg', 'cheese', 'pepper', 'flour', 'crust', 'tomato', 'chocolate']
+
+    smoothie = ['blueberries', 'strawberry', 'milk']
+    fruitSalad = ['apple', 'strawberry', 'blueberries']
+    omelete = ['egg', 'cheese', 'pepper']
+    pie = ['flour', 'egg', 'apple']
+    pizza = ['crust', 'tomato', 'cheese']
+    chocolateCake = ['chocolate', 'flour', 'egg']
+    recipeString =  ['smoothie', 'fruitSalad', 'omelete', 'pie', 'pizza', 'chocolateCake']
+    recipes = [smoothie, fruitSalad, omelete, pie, pizza, chocolateCake]
 
     create_photo_directory()
     plate = ColorfulPlate()
     robot.add_event_handler(on_new_camera_image)
-    robot.speak('I''m hungry')
+    robot.speak('Hi, I am chef cozmo! Are you hungry? Lets make some foods to satisfy our taste buds')
     robot.set_start_position()
 
-    while not plate.is_full:
+    counter = -1
+    for recipe in recipes:
+        foodsFound = []
 
-        if DEBUG_MODE:
-            input('Press enter to have Cozmo find a food')
-            random_food = choice(foods)
-            food_analyzer.force_input(random_food)
+        counter += 1
+        allFoodsFound = False
+        taste = ""
+        if(recipeString[counter]=="smoothie"):
+            taste = " sweet and creamy"
+        elif(recipeString[counter]=="fruitSalad"):
+            taste = " sweet and tart"
+        elif(recipeString[counter]=="omelete"):
+            taste = " spicy and savory"
+        elif(recipeString[counter]=="pie"):
+            taste = " sweet and crusty"
+        elif(recipeString[counter]=="pizza"):
+            taste = " salty"
+        else:
+            taste = " soft and rich"
 
-        # Check to see if critical section is open
-        if photo_location is not None:
-            food_analyzer.analyze_response(photo_location)
-            photo_location = None
+        robot.speak("Something " + taste + " sounds good")
+        robot.speak("Hmm... how about a " + recipeString[counter])
+        robot.speak("We will need " + recipe[0] +  ", " + recipe[1] + ", and " + recipe[2]) 
+        sleep(2)
+        while not allFoodsFound: 
 
-        if not food_analyzer.has_been_checked and (DEBUG_MODE or camera_lock.acquire(False)):
 
-            if food_analyzer.has_found_food():
-                # Cozmo found a food
-                food_string = food_analyzer.get_found_food()
-                food = get_food(food_string)
+            #robot.speak("We need another item")            
+            if DEBUG_MODE:
+                input('Press enter to have Cozmo find a food')
+                random_food = choice(foods)
+                food_analyzer.force_input(random_food)
 
-                robot.speak(str(food))
+            # Check to see if critical section is open
+            if photo_location is not None:
+                food_analyzer.analyze_response(photo_location)
+                photo_location = None
 
-                if plate.can_place_food(food):
-                    robot.react_positively()
-                    plate.add_food(food)
-                    if not plate.is_full:
-                        robot.speak("Please add another food to the plate")
+            if not food_analyzer.has_been_checked and (DEBUG_MODE or camera_lock.acquire(False)):
+
+                if food_analyzer.has_found_food():
+                    # Cozmo found a food
+                    food_string = food_analyzer.get_found_food()
+                    food = get_food(food_string)
+                    robot.speak(str(food))
+                   
+                    if plate.can_place_food(food, recipe):
+                        robot.react_positively()
+                        plate.add_food(food, recipe)
+                        foodsFound.append(food.name)
+                        recipe.remove(food.name)
+                        if len(recipe) == 0:
+                            allFoodsFound = True
+                        #if allFoodsFound == False:
+			    #Add another food to the plate	
+                    else:
+                        if(food.name == "empty"):
+                            robot.speak("Please add a food to the plate")
+                        elif(food.name in foodsFound):
+                            robot.speak('{} has already been added, try again'.format(food.name))
+                        else:
+                            robot.speak('{} is not part of this recipe, try again'.format(food.name))
+                        robot.react_negatively()
+
+                    robot.set_start_position()
+
+                    print('{}\n'.format(plate))
+                    if(len(recipe)==3):
+                        robot.speak("We still need " + recipe[0] +  ", " + recipe[1] + ", and " + recipe[2])
+                    elif(len(recipe)==2):
+                        robot.speak("We still need " + recipe[0] + " and " + recipe[1])
+                    elif(len(recipe)==1):
+                        robot.speak("We still need " + recipe[0])
+                    else:
+                        robot.speak("Yummy in my tummy! That was definitely " + taste)
+
+                    if(recipeString[counter] != 'chocolateCake' and len(recipe)==0):
+                        robot.speak("That was good, but now lets make something else")
 
                 else:
-                    robot.speak('There is already a {} food on the plate'.format(food.color))
-                    robot.react_negatively()
+                    pass
 
-                robot.set_start_position()
-
-                print('{}\n'.format(plate))
+                if not DEBUG_MODE:
+                    camera_lock.release()
 
             else:
-                pass
-
-            if not DEBUG_MODE:
-                camera_lock.release()
-
-        else:
-            pass  # Picture currently being taken or processing
+                pass  # Picture currently being taken or processing
 
     robot.check_plate_and_celebrate(0, 10, -130)
 
@@ -102,7 +155,6 @@ def on_new_camera_image(evt, **kwargs):
 
         camera_lock.release()
 
-
 def create_photo_directory():
     if os.path.exists('photos'):
         shutil.rmtree('photos')
@@ -114,3 +166,5 @@ if DEBUG_MODE:
     cozmo_program()
 else:
     cozmo.run_program(cozmo_program, use_viewer=True, force_viewer_on_top=True)
+
+
